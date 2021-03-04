@@ -1,0 +1,38 @@
+{% extends 'add_products/layout.html' %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'add_products/style.css' %}">
+    <title>Document</title>
+{% endblock %}
+
+{% block body %}
+    <h1>ADICIONAR PRODUTOS</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" id="submit">
+    </form>
+
+    <table>
+        <tr>
+            <td>CODIGO</td>
+            <td>DESCRIÇÃO</td>
+            <td>MARCA</td>
+            <td>TAMANHO</td>
+            <td>VENDA</td>
+            <td>DATA</td>
+            <td>QUANTIDADE</td>
+        </tr>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.clothes.code }}</td>
+                <td>{{ product.clothes.description }}</td>
+                <td>{{ product.clothes.brand }}</td>
+                <td>{{ product.clothes.size }}</td>
+                <td>{{ product.clothes.sell_price }}</td>
+                <td>{{ product.date }}</td>
+                <td>{{ product.amount }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
