@@ -1,0 +1,17 @@
+{% extends 'stock/layout.html' %}
+{% load bootstrap %}
+
+{% block title %}
+Adicionar produto
+{% endblock %}
+
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form | bootstrap }}
+    <button type="submit" class="btn btn-second">
+    Salvar
+    </button>
+</form>
+
+{% endblock %}
