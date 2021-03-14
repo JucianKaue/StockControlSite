@@ -1,33 +1,24 @@
 {% extends 'Stock/layout.html' %}
 
 {% block title %}
-Lista de entrada
+{{ page_title }}
 {% endblock %}
 
 {% block content %}
 <table class="table table-striped">
     <thead>
         <tr>
-            <th scope="col">CÓDIGO</th>
-            <th scope="col">TAMANHO</th>
-            <th scope="col">DESCRIÇÃO</th>
-            <th scope="col">MARCA</th>
-            <th scope="col">PREÇO</th>
-            <th scope="col">QUANTIDADE</th>
-            <th scope="col">DATA</th>
-            <th scope="col">AÇÃO</th>
+            {% for header in table_headers %}
+            <th scope="col">{{ header }}</th>
+            {% endfor %}
         </tr>
     </thead>
     <tbody>
-        {% for product in products %}
+        {% for line in table_data %}
             <tr>
-                <td>{{ product.clothes.code }}</td>
-                <td>{{ product.clothes.size }}</td>
-                <td>{{ product.clothes.description }}</td>
-                <td>{{ product.clothes.brand }}</td>
-                <td>{{ product.clothes.sell_price }}</td>
-                <td>{{ product.amount }}</td>
-                <td>{{ product.date }}</td>
+                {% for data in line %}
+                <td>{{ data }}</td>
+                {% endfor %}
                 <td>
                     <a href="#">
                         <i class="glyphicon glyphicon-pencil"></i>

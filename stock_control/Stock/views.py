@@ -63,6 +63,44 @@ def add_product(request):
 
 def table_inventory(request):
     products = Inventory.objects.all()
+    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'AÇÃO']
+    tdata = []
+    for product in products:
+        data_list = [
+            product.clothes.code,
+            product.clothes.size,
+            product.clothes.description,
+            product.clothes.brand,
+            product.clothes.sell_price,
+            product.amount,
+        ]
+        tdata.append(data_list)
+
     return render(request, 'stock/list_products.html', {
-        'products': products
+        'page_title': 'Tabela Estoque',
+        'table_headers': theaders,
+        'table_data': tdata
+    })
+
+
+def table_entry(request):
+    products = Entry.objects.all()
+    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'DATA', 'AÇÃO']
+    tdata = []
+    for product in products:
+        data_list = [
+            product.clothes.code,
+            product.clothes.size,
+            product.clothes.description,
+            product.clothes.brand,
+            product.clothes.sell_price,
+            product.amount,
+            product.date
+        ]
+        tdata.append(data_list)
+
+    return render(request, 'stock/list_products.html', {
+        'page_title': 'Tabela de entrada',
+        'table_headers': theaders,
+        'table_data': tdata,
     })
