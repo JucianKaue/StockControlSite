@@ -26,3 +26,6 @@ class Entry(models.Model):
     clothes = models.ForeignKey(Clothes, on_delete=models.SET_NULL, null=True)
     amount = models.IntegerField(null=False)
     date = models.DateTimeField(default=timezone.now, null=False)
+
+    def __str__(self):
+        return f'{self.clothes} --> {self.amount} | {self.date}'

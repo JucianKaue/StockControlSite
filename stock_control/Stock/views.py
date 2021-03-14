@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django import forms
@@ -23,18 +24,25 @@ def add_product(request):
     if form.is_valid():
         form = form.cleaned_data
 
-        if get_object_or_404(Clothes, code=form['code'], size=form['description']):
-            return HttpResponse('DEU CERTO')
-        product = Clothes(
-            code=form['code'],
-            size=form['size'],
-            description=form['description'],
-            brand=Brand.objects.get(name='Daksul'),
-            entry_price=form['entry_price'],
-            sell_price=form['sell_price']
-        )
+        if len(Clothes.objects.filter(code=form['code'], size=form['size'])) == 1:
+            product = Clothes.objects.get(code=form['code'], size=form['size'])
+        else:
+            product = Clothes(
+                code=form['code'],
+                size=form['size'].upper(),
+                description=form['description'],
+                brand=Brand.objects.get(name='Daksul'),
+                entry_price=form['entry_price'],
+                sell_price=form['sell_price']
+            )
+            product.save()
 
-        product.save()
+        Entry(
+            clothes=product,
+            amount=form['amount'],
+            date=form['date']
+            ).save()
+        messages.success(request, 'Produto adicionado com sucesso')
 
         return render(request, 'stock/add_product.html', {'form': FormEntry()})
     return render(request, 'stock/add_product.html', {'form': form})
