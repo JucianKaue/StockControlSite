@@ -29,3 +29,8 @@ class Entry(models.Model):
 
     def __str__(self):
         return f'{self.clothes} --> {self.amount} | {self.date}'
+
+
+class Inventory(models.Model):
+    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField()

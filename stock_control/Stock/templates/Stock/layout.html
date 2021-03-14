@@ -23,20 +23,22 @@
                 </div>
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav">
-                        <li><a href="{% url 'list_products' %}">Produtos</a></li>
-
+                        <li><a href="#">Tabela entrada</a> </li>
+                        <li><a href="{% url 'table_inventory' %}">Tabela estoque</a></li>
+                        <li><a href="#">Tabela Saída</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
-        <div class="content">
-            {% block content %}
-            {% endblock content %}
-        </div>
         {% if messages %}
             {% for message in messages %}
                {{ message }}
             {% endfor %}
         {% endif %}
+        <div class="content">
+            {% block content %}
+            {% endblock content %}
+        </div>
+
     </body>
 </html>

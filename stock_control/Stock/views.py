@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django import forms
 from .models import *
-from datetime import date
+from django.utils import timezone
 
 
 # Create your views here.
@@ -16,14 +16,14 @@ class FormEntry(forms.Form):
     sell_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
 
     amount = forms.IntegerField(min_value=1, required=True)
-    date = forms.DateTimeField(initial=date.today(), required=True)
+    date = forms.DateTimeField(initial=timezone.now(), required=True)
 
 
 def add_product(request):
     form = FormEntry(request.POST or None)
     if form.is_valid():
         form = form.cleaned_data
-
+        # If the vesture already exists in the table clothes.
         if len(Clothes.objects.filter(code=form['code'], size=form['size'])) == 1:
             product = Clothes.objects.get(code=form['code'], size=form['size'])
         else:
@@ -40,13 +40,29 @@ def add_product(request):
         Entry(
             clothes=product,
             amount=form['amount'],
-            date=form['date']
+            date=form['date'],
             ).save()
-        messages.success(request, 'Produto adicionado com sucesso')
+
+        # Add to inventory
+        query_inventory = Inventory.objects.filter(clothes=product)
+        if len(query_inventory) == 1:
+            amount = query_inventory[0].amount + product.amount
+            query_inventory[0].amount += product.amount
+            query_inventory[0].save()
+        else:
+            Inventory(
+                clothes=product,
+                amount=form['amount']
+            ).save()
+
+        messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
         return render(request, 'stock/add_product.html', {'form': FormEntry()})
     return render(request, 'stock/add_product.html', {'form': form})
 
 
-def list_products(request):
-    pass
+def table_inventory(request):
+    products = Inventory.objects.all()
+    return render(request, 'stock/list_products.html', {
+        'products': products
+    })

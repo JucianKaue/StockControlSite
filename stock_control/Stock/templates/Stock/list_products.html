@@ -1,1 +1,49 @@
 {% extends 'Stock/layout.html' %}
+
+{% block title %}
+Lista de entrada
+{% endblock %}
+
+{% block content %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">CÓDIGO</th>
+            <th scope="col">TAMANHO</th>
+            <th scope="col">DESCRIÇÃO</th>
+            <th scope="col">MARCA</th>
+            <th scope="col">PREÇO</th>
+            <th scope="col">QUANTIDADE</th>
+            <th scope="col">DATA</th>
+            <th scope="col">AÇÃO</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.clothes.code }}</td>
+                <td>{{ product.clothes.size }}</td>
+                <td>{{ product.clothes.description }}</td>
+                <td>{{ product.clothes.brand }}</td>
+                <td>{{ product.clothes.sell_price }}</td>
+                <td>{{ product.amount }}</td>
+                <td>{{ product.date }}</td>
+                <td>
+                    <a href="#">
+                        <i class="glyphicon glyphicon-pencil"></i>
+                    </a>
+                    <a href="#">
+                        <i class="glyphicon glyphicon-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'add_product' %}">
+    <button class="btn btn-primary">
+        Cadastrar produto
+    </button>
+</a>
+
+{% endblock %}
