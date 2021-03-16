@@ -62,8 +62,41 @@ def add_product(request):
 
 
 def table_inventory(request):
-    products = Inventory.objects.all()
-    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'AÇÃO']
+    query = request.GET.get("search")
+    category = request.GET.get("category")
+
+    if query:
+        if category == 'CÓDIGO':
+            products = []
+            for clothes in Clothes.objects.filter(code=query):
+                for product in Inventory.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'TAMANHO':
+            products = []
+            for clothes in Clothes.objects.filter(size=query):
+                for product in Inventory.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'DESCRIÇÃO':
+            products = []
+            for clothes in Clothes.objects.filter(description=query):
+                for product in Inventory.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'MARCA':
+            products = []
+            for clothes in Clothes.objects.filter(brand=query):
+                for product in Inventory.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'PREÇO':
+            products = []
+            for clothes in Clothes.objects.filter(sell_price=query):
+                for product in Inventory.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'QUANTIDADE':
+            products = Inventory.objects.filter(amount=query)
+    else:
+        products = Inventory.objects.all()
+
+    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE']
     tdata = []
     for product in products:
         data_list = [
@@ -84,8 +117,43 @@ def table_inventory(request):
 
 
 def table_entry(request):
-    products = Entry.objects.all()
-    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'DATA', 'AÇÃO']
+    query = request.GET.get("search")
+    category = request.GET.get("category")
+
+    if query:
+        if category == 'CÓDIGO':
+            products = []
+            for clothes in Clothes.objects.filter(code=query):
+                for product in Entry.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'TAMANHO':
+            products = []
+            for clothes in Clothes.objects.filter(size=query):
+                for product in Entry.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'DESCRIÇÃO':
+            products = []
+            for clothes in Clothes.objects.filter(description=query):
+                for product in Entry.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'MARCA':
+            products = []
+            for clothes in Clothes.objects.filter(brand=query):
+                for product in Entry.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'PREÇO':
+            products = []
+            for clothes in Clothes.objects.filter(sell_price=query):
+                for product in Entry.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'QUANTIDADE':
+            products = Entry.objects.filter(amount=query)
+        elif category == 'DATA':
+            products = Entry.objects.filter(date__icontains=query)
+    else:
+        products = Entry.objects.all()
+
+    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'DATA']
     tdata = []
     for product in products:
         data_list = [
@@ -104,3 +172,6 @@ def table_entry(request):
         'table_headers': theaders,
         'table_data': tdata,
     })
+
+
+

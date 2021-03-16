@@ -5,12 +5,27 @@
 {% endblock %}
 
 {% block content %}
+<form method="get">
+    <div class="input-group">
+        <input type="text" class="form-control" name="search" placeholder="Buscar Produto">
+        <select name="category" class="custom-select">
+            {% for option in table_headers %}
+            <option>{{ option }}</option>
+            {% endfor %}
+        </select>
+        <span class="input-group-btn">
+            <button class="btn btn-default" type="submit">Pesquisar</button>
+        </span>
+    </div>
+</form>
+
 <table class="table table-striped">
     <thead>
         <tr>
             {% for header in table_headers %}
             <th scope="col">{{ header }}</th>
             {% endfor %}
+            <th>AÇÃO</th>
         </tr>
     </thead>
     <tbody>
