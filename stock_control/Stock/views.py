@@ -46,8 +46,7 @@ def add_product(request):
         # Add to inventory
         query_inventory = Inventory.objects.filter(clothes=product)
         if len(query_inventory) == 1:
-            amount = query_inventory[0].amount + product.amount
-            query_inventory[0].amount += product.amount
+            query_inventory[0].amount += form['amount']
             query_inventory[0].save()
         else:
             Inventory(
@@ -59,6 +58,71 @@ def add_product(request):
 
         return render(request, 'stock/add_product.html', {'form': FormEntry()})
     return render(request, 'stock/add_product.html', {'form': form})
+
+
+def edit_product_entry(request, pk):
+    product = Entry.objects.get(pk=pk)
+    if request.method == 'POST':
+        form = FormEntry(request.POST or None)
+        if form.is_valid():
+            form = form.cleaned_data
+
+            product_inventory = Inventory.objects.get(
+                clothes=Clothes.objects.get(
+                    code=product.clothes.code,
+                    size=product.clothes.size))
+            product_inventory.amount -= product.amount   # Reset the product amount
+            product_inventory.save()
+            if product_inventory.amount == 0:
+                product_inventory.delete()
+
+            query_clothes = Clothes.objects.filter(code=form['code'], size=form['size'])
+            if len(query_clothes) == 1:
+                vesture = query_clothes[0]
+            else:
+                vesture = Clothes(
+                    code=form['code'],
+                    size=form['size'],
+                    description=form['description'],
+                    brand=Brand.objects.get(name='Daksul'),
+                    entry_price=form['entry_price'],
+                    sell_price=form['sell_price']
+                )
+                vesture.save()
+
+            product.delete()
+            Entry(
+                clothes=vesture,
+                amount=form['amount'],
+                date=form['date']
+            ).save()
+
+            if len(Inventory.objects.filter(clothes=Clothes.objects.get(code=form['code'], size=form['size']))) == 0:
+                Inventory(
+                    clothes=vesture,
+                    amount=form['amount'],
+                ).save()
+            else:
+                product_inventory.clothes = vesture
+                product_inventory.amount += form['amount']
+                product_inventory.save()
+
+            return render(request, 'Stock/table_entry.html', {
+                'products': Inventory.objects.all()
+            })
+
+    else:
+        return render(request, 'Stock/add_product.html', {
+            'form': FormEntry(initial={
+                'code': product.clothes.code,
+                'size': product.clothes.size,
+                'description': product.clothes.description,
+                'brand': product.clothes.brand,
+                'entry_price': product.clothes.entry_price,
+                'sell_price': product.clothes.sell_price,
+                'amount': product.amount
+            })
+        })
 
 
 def table_inventory(request):
@@ -93,26 +157,13 @@ def table_inventory(request):
                     products.append(product)
         elif category == 'QUANTIDADE':
             products = Inventory.objects.filter(amount=query)
+        else:
+            products = []
     else:
         products = Inventory.objects.all()
 
-    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE']
-    tdata = []
-    for product in products:
-        data_list = [
-            product.clothes.code,
-            product.clothes.size,
-            product.clothes.description,
-            product.clothes.brand,
-            product.clothes.sell_price,
-            product.amount,
-        ]
-        tdata.append(data_list)
-
-    return render(request, 'stock/list_products.html', {
-        'page_title': 'Tabela Estoque',
-        'table_headers': theaders,
-        'table_data': tdata
+    return render(request, 'stock/table_inventory.html', {
+        'products': products
     })
 
 
@@ -150,27 +201,13 @@ def table_entry(request):
             products = Entry.objects.filter(amount=query)
         elif category == 'DATA':
             products = Entry.objects.filter(date__icontains=query)
+        else:
+            products = []
     else:
         products = Entry.objects.all()
 
-    theaders = ['CÓDIGO', 'TAMANHO', 'DESCRIÇÃO', 'MARCA', 'PREÇO', 'QUANTIDADE', 'DATA']
-    tdata = []
-    for product in products:
-        data_list = [
-            product.clothes.code,
-            product.clothes.size,
-            product.clothes.description,
-            product.clothes.brand,
-            product.clothes.sell_price,
-            product.amount,
-            product.date
-        ]
-        tdata.append(data_list)
-
-    return render(request, 'stock/list_products.html', {
-        'page_title': 'Tabela de entrada',
-        'table_headers': theaders,
-        'table_data': tdata,
+    return render(request, 'stock/table_entry.html', {
+        'products': products
     })
 
 

@@ -1,7 +1,7 @@
 {% extends 'Stock/layout.html' %}
 
 {% block title %}
-{{ page_title }}
+Tabela de entrada
 {% endblock %}
 
 {% block content %}
@@ -9,9 +9,13 @@
     <div class="input-group">
         <input type="text" class="form-control" name="search" placeholder="Buscar Produto">
         <select name="category" class="custom-select">
-            {% for option in table_headers %}
-            <option>{{ option }}</option>
-            {% endfor %}
+            <option>CÓDIGO</option>
+            <option>TAMANHO</option>
+            <option>DESCRIÇÃO</option>
+            <option>MARCA</option>
+            <option>PREÇO</option>
+            <option>QUANTIDADE</option>
+            <option>DATA</option>
         </select>
         <span class="input-group-btn">
             <button class="btn btn-default" type="submit">Pesquisar</button>
@@ -22,20 +26,28 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            {% for header in table_headers %}
-            <th scope="col">{{ header }}</th>
-            {% endfor %}
+            <th>CÓDIGO</th>
+            <th>TAMANHO</th>
+            <th>DESCRIÇÃO</th>
+            <th>MARCA</th>
+            <th>PREÇO</th>
+            <th>QUANTIDADE</th>
+            <th>DATA</th>
             <th>AÇÃO</th>
         </tr>
     </thead>
     <tbody>
-        {% for line in table_data %}
+        {% for product in products %}
             <tr>
-                {% for data in line %}
-                <td>{{ data }}</td>
-                {% endfor %}
+                <td>{{ product.clothes.code }}</td>
+                <td>{{ product.clothes.size }}</td>
+                <td>{{ product.clothes.description }}</td>
+                <td>{{ product.clothes.brand }}</td>
+                <td>{{ product.clothes.sell_price }}</td>
+                <td>{{ product.amount }}</td>
+                <TD>{{ product.date }}</TD>
                 <td>
-                    <a href="#">
+                    <a href="{% url 'edit_product_entry' pk=product.pk %}">
                         <i class="glyphicon glyphicon-pencil"></i>
                     </a>
                     <a href="#">
