@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django import forms
 from .models import *
 from django.utils import timezone
@@ -97,20 +97,23 @@ def edit_product_entry(request, pk):
                 date=form['date']
             ).save()
 
-            if len(Inventory.objects.filter(clothes=Clothes.objects.get(code=form['code'], size=form['size']))) == 0:
-                Inventory(
-                    clothes=vesture,
-                    amount=form['amount'],
-                ).save()
-            else:
-                product_inventory.clothes = vesture
-                product_inventory.amount += form['amount']
-                product_inventory.save()
+            Inventory(
+                clothes=vesture,
+                amount=form['amount'],
+            ).save()
 
-            return render(request, 'Stock/table_entry.html', {
-                'products': Inventory.objects.all()
-            })
+            query_inventory = Inventory.objects.filter(clothes=Clothes.objects.get(code=form['code'], size=form['size']))
+            if len(query_inventory) > 1:
+                amount = 0
+                for i in range(0, len(query_inventory)):
+                    amount += query_inventory[i].amount
+                    if i == len(query_inventory)-1:
+                        query_inventory[i].amount = amount
+                        query_inventory[i].save()
+                    else:
+                        query_inventory[i].delete()
 
+            return redirect('table_entry')
     else:
         return render(request, 'Stock/add_product.html', {
             'form': FormEntry(initial={

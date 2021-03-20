@@ -23,7 +23,7 @@ class Clothes(models.Model):
 
 
 class Entry(models.Model):
-    clothes = models.ForeignKey(Clothes, on_delete=models.SET_NULL, null=True)
+    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, null=True)
     amount = models.IntegerField(null=False)
     date = models.DateTimeField(default=timezone.now, null=False)
 
