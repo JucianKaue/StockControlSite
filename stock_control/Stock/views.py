@@ -128,6 +128,25 @@ def edit_product_entry(request, pk):
         })
 
 
+def delete_product_entry(request, pk):
+    product = Entry.objects.get(pk=pk)
+    if request.method == 'POST':
+
+        product_inventory = Inventory.objects.get(clothes=product.clothes)
+        product_inventory.amount -= product.amount
+        product_inventory.save()
+
+        if product_inventory.amount == 0:
+            product_inventory.delete()
+
+        product.delete()
+        return redirect('table_inventory')
+    else:
+        return render(request, 'Stock/delete_product.html', {
+            'product': product
+        })
+
+
 def table_inventory(request):
     query = request.GET.get("search")
     category = request.GET.get("category")

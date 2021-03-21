@@ -50,7 +50,7 @@ Tabela de entrada
                     <a href="{% url 'edit_product_entry' pk=product.pk %}">
                         <i class="glyphicon glyphicon-pencil"></i>
                     </a>
-                    <a href="#">
+                    <a href="{% url 'delete_product_entry' pk=product.pk %}">
                         <i class="glyphicon glyphicon-trash"></i>
                     </a>
                 </td>
