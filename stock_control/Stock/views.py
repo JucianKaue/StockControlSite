@@ -15,7 +15,7 @@ class FormEntry(forms.Form):
     entry_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
     sell_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
 
-    amount = forms.IntegerField(min_value=1, required=True)
+    amount = forms.IntegerField(min_value=1, initial=1, required=True)
     date = forms.DateTimeField(initial=timezone.now(), required=True)
 
 
@@ -24,8 +24,10 @@ def add_product(request):
     if form.is_valid():
         form = form.cleaned_data
         # If the vesture already exists in the table clothes.
-        if len(Clothes.objects.filter(code=form['code'], size=form['size'])) == 1:
-            product = Clothes.objects.get(code=form['code'], size=form['size'])
+        if len(Clothes.objects.filter(code=form['code'])) == 1:
+            product = Clothes.objects.get(code=form['code'])
+            if product.size != form['size']:
+                product.size = form['size']
         else:
             product = Clothes(
                 code=form['code'],
@@ -67,6 +69,7 @@ def edit_product_entry(request, pk):
         if form.is_valid():
             form = form.cleaned_data
 
+            # Diminui a quantidade no estoque
             product_inventory = Inventory.objects.get(
                 clothes=Clothes.objects.get(
                     code=product.clothes.code,
@@ -76,9 +79,15 @@ def edit_product_entry(request, pk):
             if product_inventory.amount == 0:
                 product_inventory.delete()
 
+            # Update the product data
             query_clothes = Clothes.objects.filter(code=form['code'], size=form['size'])
             if len(query_clothes) == 1:
                 vesture = query_clothes[0]
+                vesture.description = form['description']
+                vesture.brand = Brand.objects.get(name=form['brand'])
+                vesture.entry_price = form['entry_price']
+                vesture.sell_price = form['sell_price']
+                vesture.save()
             else:
                 vesture = Clothes(
                     code=form['code'],
@@ -90,6 +99,7 @@ def edit_product_entry(request, pk):
                 )
                 vesture.save()
 
+            # Add to entry
             product.delete()
             Entry(
                 clothes=vesture,
@@ -97,11 +107,13 @@ def edit_product_entry(request, pk):
                 date=form['date']
             ).save()
 
+            # Add to inventory
             Inventory(
                 clothes=vesture,
                 amount=form['amount'],
             ).save()
 
+            # Delete de duplicated products
             query_inventory = Inventory.objects.filter(clothes=Clothes.objects.get(code=form['code'], size=form['size']))
             if len(query_inventory) > 1:
                 amount = 0
@@ -112,6 +124,15 @@ def edit_product_entry(request, pk):
                         query_inventory[i].save()
                     else:
                         query_inventory[i].delete()
+
+            # uptade the data to all of the products with this product code
+            query_clothes = Clothes.objects.filter(code=form['code'])
+            for clothes in query_clothes:
+                clothes.description = form['description']
+                clothes.brand = Brand.objects.get(name=form['brand'])
+                clothes.entry_price = form['entry_price']
+                clothes.sell_price = form['sell_price']
+                clothes.save()
 
             return redirect('table_entry')
     else:
