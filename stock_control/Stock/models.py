@@ -28,7 +28,7 @@ class Entry(models.Model):
     date = models.DateTimeField(default=timezone.now, null=False)
 
     def __str__(self):
-        return f'{self.clothes} --> {self.amount} | {self.date}'
+        return f'{self.clothes} --> Q:{self.amount} | D:{self.date}'
 
 
 class Inventory(models.Model):
