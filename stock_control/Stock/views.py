@@ -15,7 +15,7 @@ class FormEntry(forms.Form):
     entry_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
     sell_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
 
-    amount = forms.IntegerField(min_value=1, initial=1, required=True)
+    amount = forms.IntegerField(min_value=0, initial=1, required=True)
     date = forms.DateTimeField(initial=timezone.now(), required=True)
 
 
@@ -33,7 +33,7 @@ def add_product(request):
                 code=form['code'],
                 size=form['size'].upper(),
                 description=form['description'],
-                brand=Brand.objects.get(name='Daksul'),
+                brand=Brand.objects.get(name=form['brand']),
                 entry_price=form['entry_price'],
                 sell_price=form['sell_price']
             )
@@ -76,8 +76,6 @@ def edit_product_entry(request, pk):
                     size=product.clothes.size))
             product_inventory.amount -= product.amount   # Reset the product amount
             product_inventory.save()
-            if product_inventory.amount == 0:
-                product_inventory.delete()
 
             # Update the product data
             query_clothes = Clothes.objects.filter(code=form['code'], size=form['size'])
