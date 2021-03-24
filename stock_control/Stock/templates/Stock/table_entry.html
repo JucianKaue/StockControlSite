@@ -47,12 +47,16 @@ Tabela de entrada
                 <td>{{ product.amount }}</td>
                 <TD>{{ product.date }}</TD>
                 <td>
+                    <a href="{% url 'add_existing_product' pk=product.pk %}">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </a>
                     <a href="{% url 'edit_product_entry' pk=product.pk %}">
                         <i class="glyphicon glyphicon-pencil"></i>
                     </a>
                     <a href="{% url 'delete_product_entry' pk=product.pk %}">
                         <i class="glyphicon glyphicon-trash"></i>
                     </a>
+
                 </td>
             </tr>
         {% endfor %}
