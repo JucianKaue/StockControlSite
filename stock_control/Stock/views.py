@@ -240,14 +240,15 @@ def table_inventory(request):
                     products.append(product)
         elif category == 'DESCRIÇÃO':
             products = []
-            for clothes in Clothes.objects.filter(description=query):
+            for clothes in Clothes.objects.filter(description__icontains=query):
                 for product in Inventory.objects.filter(clothes=clothes):
                     products.append(product)
         elif category == 'MARCA':
             products = []
-            for clothes in Clothes.objects.filter(brand=query):
-                for product in Inventory.objects.filter(clothes=clothes):
-                    products.append(product)
+            for brand in Brand.objects.filter(name__icontains=query):
+                for clothes in Clothes.objects.filter(brand=brand):
+                    for product in Inventory.objects.filter(clothes=clothes):
+                        products.append(product)
         elif category == 'PREÇO':
             products = []
             for clothes in Clothes.objects.filter(sell_price=query):
@@ -282,14 +283,15 @@ def table_entry(request):
                     products.append(product)
         elif category == 'DESCRIÇÃO':
             products = []
-            for clothes in Clothes.objects.filter(description=query):
+            for clothes in Clothes.objects.filter(description__icontains=query):
                 for product in Entry.objects.filter(clothes=clothes):
                     products.append(product)
         elif category == 'MARCA':
             products = []
-            for clothes in Clothes.objects.filter(brand=query):
-                for product in Entry.objects.filter(clothes=clothes):
-                    products.append(product)
+            for brand in Brand.objects.filter(name__icontains=query):
+                for clothes in Clothes.objects.filter(brand=brand):
+                    for product in Entry.objects.filter(clothes=clothes):
+                        products.append(product)
         elif category == 'PREÇO':
             products = []
             for clothes in Clothes.objects.filter(sell_price=query):
