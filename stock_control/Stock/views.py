@@ -126,13 +126,19 @@ def edit_product_entry(request, pk):
         if form.is_valid():
             form = form.cleaned_data
 
-            # Diminui a quantidade no estoque
             product_inventory = Inventory.objects.get(
                 clothes=Clothes.objects.get(
                     code=product.clothes.code,
                     size=product.clothes.size))
+            # Diminui a quantidade no estoque
             product_inventory.amount -= product.amount   # Reset the product amount
             product_inventory.save()
+
+            if product.clothes.code != form['code']:
+                product.delete()
+                if product_inventory.amount == 0:
+                    product_inventory.delete()
+                    product_inventory.clothes.delete()
 
             # Update the product data
             query_clothes = Clothes.objects.filter(code=form['code'], size=form['size'])
@@ -143,7 +149,7 @@ def edit_product_entry(request, pk):
                 vesture.entry_price = form['entry_price']
                 vesture.sell_price = form['sell_price']
                 vesture.save()
-            else:
+            elif len(query_clothes) == 0:
                 vesture = Clothes(
                     code=form['code'],
                     size=form['size'],
@@ -155,12 +161,9 @@ def edit_product_entry(request, pk):
                 vesture.save()
 
             # Add to entry
-            product.delete()
-            Entry(
-                clothes=vesture,
-                amount=form['amount'],
-                date=form['date']
-            ).save()
+            product.clothes = vesture
+            product.amount = form['amount']
+            product.save()
 
             # Add to inventory
             Inventory(

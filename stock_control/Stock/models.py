@@ -23,7 +23,7 @@ class Clothes(models.Model):
 
 
 class Entry(models.Model):
-    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, null=True)
+    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, null=True, related_name='entry')
     amount = models.IntegerField(null=False)
     date = models.DateTimeField(default=timezone.now, null=False)
 
@@ -32,5 +32,5 @@ class Entry(models.Model):
 
 
 class Inventory(models.Model):
-    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE)
+    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, related_name='inventory')
     amount = models.PositiveIntegerField()
