@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django import forms
+from django.utils.safestring import mark_safe
+
 from .models import *
 from datetime import datetime
 
@@ -9,8 +11,10 @@ from datetime import datetime
 # Create your views here.
 class FormEntry(forms.Form):
     code = forms.CharField(max_length=15, required=True)
-    size = forms.CharField(max_length=3, required=True)
-    description = forms.CharField(max_length=50, required=True)
+    size = forms.CharField(max_length=3, required=True,
+                           widget=forms.TextInput(attrs={'style': 'text-transform:uppercase;'}))
+    description = forms.CharField(max_length=50, required=True,
+                                  widget=forms.TextInput(attrs={'style': 'text-transform:uppercase;'}))
     brand = forms.ModelChoiceField(queryset=Brand.objects.all(), required=True)
     entry_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
     sell_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
@@ -18,11 +22,21 @@ class FormEntry(forms.Form):
     amount = forms.IntegerField(min_value=0, initial=1, required=True)
     date = forms.DateTimeField(initial=datetime.now(), required=True)
 
+    def formatted(self):
+        return {'code': self.cleaned_data['code'],
+                'size': f"{self.cleaned_data['size']}".upper(),
+                'description': f"{self.cleaned_data['description']}".upper(),
+                'brand': self.cleaned_data['brand'],
+                'entry_price': self.cleaned_data['entry_price'],
+                'sell_price': self.cleaned_data['sell_price'],
+                'amount': self.cleaned_data['amount'],
+                'date': self.cleaned_data['date']}
+
 
 def add_product(request):
     form = FormEntry(request.POST or None)
     if form.is_valid():
-        form = form.cleaned_data
+        form = form.formatted()
         # If the vesture already exists in the table clothes.
         if len(Clothes.objects.filter(code=form['code'])) == 1:
             product = Clothes.objects.get(code=form['code'])
@@ -58,8 +72,8 @@ def add_product(request):
 
         messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
-        return render(request, 'stock/add_product.html', {'form': FormEntry()})
-    return render(request, 'stock/add_product.html', {'form': form})
+        return render(request, 'stock/add_product.html', {'form': FormEntry(), 'page_title': 'Adicionar produto'})
+    return render(request, 'stock/add_product.html', {'form': form, 'page_title': 'Adicionar produto'})
 
 
 def add_existing_product(request, pk):
@@ -77,16 +91,14 @@ def add_existing_product(request, pk):
     if request.method == 'POST':
         form = FormEntry(request.POST or None)
         if form.is_valid():
-            form = form.cleaned_data
+            form = form.formatted()
             # If the vesture already exists in the table clothes.
-            if len(Clothes.objects.filter(code=form['code'])) == 1:
+            if len(Clothes.objects.filter(code=form['code'], size=form['size'])) == 1:
                 product = Clothes.objects.get(code=form['code'])
-                if product.size != form['size']:
-                    product.size = form['size']
             else:
                 product = Clothes(
                     code=form['code'],
-                    size=form['size'].upper(),
+                    size=form['size'],
                     description=form['description'],
                     brand=Brand.objects.get(name=form['brand']),
                     entry_price=form['entry_price'],
@@ -115,30 +127,30 @@ def add_existing_product(request, pk):
 
             return render(request, 'stock/add_product.html', {'form': FormEntry()})
     return render(request, 'Stock/add_product.html', {
-        'form': form
+        'form': form,
+        'page_title': 'Adicionar produto'
     })
 
 
 def edit_product_entry(request, pk):
-    product = Entry.objects.get(pk=pk)
+    product_entry = Entry.objects.get(pk=pk)
     if request.method == 'POST':
         form = FormEntry(request.POST or None)
         if form.is_valid():
-            form = form.cleaned_data
+            form = form.formatted()
 
-            product_inventory = Inventory.objects.get(
-                clothes=Clothes.objects.get(
-                    code=product.clothes.code,
-                    size=product.clothes.size))
+            product = Clothes.objects.get(code=product_entry.clothes.code, size=product_entry.clothes.size)
+            product_inventory = Inventory.objects.get(clothes=product)
             # Diminui a quantidade no estoque
-            product_inventory.amount -= product.amount   # Reset the product amount
+            product_inventory.amount -= product_entry.amount   # Reset the product amount
             product_inventory.save()
+            product_inventory = Inventory.objects.get(clothes=product)
 
-            if product.clothes.code != form['code']:
-                product.delete()
+            if product_entry.clothes.code != form['code'] or product_entry.clothes.size != form['size']:
+                product_entry.delete()
                 if product_inventory.amount == 0:
                     product_inventory.delete()
-                    product_inventory.clothes.delete()
+                    product.delete()
 
             # Update the product data
             query_clothes = Clothes.objects.filter(code=form['code'], size=form['size'])
@@ -161,9 +173,9 @@ def edit_product_entry(request, pk):
                 vesture.save()
 
             # Add to entry
-            product.clothes = vesture
-            product.amount = form['amount']
-            product.save()
+            product_entry.clothes = vesture
+            product_entry.amount = form['amount']
+            product_entry.save()
 
             # Add to inventory
             Inventory(
@@ -196,14 +208,15 @@ def edit_product_entry(request, pk):
     else:
         return render(request, 'Stock/add_product.html', {
             'form': FormEntry(initial={
-                'code': product.clothes.code,
-                'size': product.clothes.size,
-                'description': product.clothes.description,
-                'brand': product.clothes.brand,
-                'entry_price': product.clothes.entry_price,
-                'sell_price': product.clothes.sell_price,
-                'amount': product.amount
-            })
+                'code': product_entry.clothes.code,
+                'size': product_entry.clothes.size,
+                'description': product_entry.clothes.description,
+                'brand': product_entry.clothes.brand,
+                'entry_price': product_entry.clothes.entry_price,
+                'sell_price': product_entry.clothes.sell_price,
+                'amount': product_entry.amount
+            }),
+            'page_title': 'Editar produto'
         })
 
 
@@ -217,6 +230,7 @@ def delete_product_entry(request, pk):
 
         if product_inventory.amount == 0:
             product_inventory.delete()
+            Clothes.objects.get(code=product.clothes.code, size=product.clothes.size).delete()
 
         product.delete()
         return redirect('table_inventory')
