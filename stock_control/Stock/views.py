@@ -20,7 +20,7 @@ class FormEntry(forms.Form):
     sell_price = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
 
     amount = forms.IntegerField(min_value=0, initial=1, required=True)
-    date = forms.DateTimeField(initial=datetime.now(), required=True)
+    date = forms.DateTimeField(required=True)
 
     def formatted(self):
         return {'code': self.cleaned_data['code'],
@@ -85,6 +85,7 @@ def add_existing_product(request, pk):
         'brand': product.clothes.brand,
         'entry_price': product.clothes.entry_price,
         'sell_price': product.clothes.sell_price,
+        'date': datetime.now(),
         'amount': 1
     })
 
@@ -214,6 +215,7 @@ def edit_product_entry(request, pk):
                 'brand': product_entry.clothes.brand,
                 'entry_price': product_entry.clothes.entry_price,
                 'sell_price': product_entry.clothes.sell_price,
+                'date': datetime.now(),
                 'amount': product_entry.amount
             }),
             'page_title': 'Editar produto'
