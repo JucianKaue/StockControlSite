@@ -35,6 +35,7 @@ class FormEntry(forms.Form):
 
 def add_product(request):
     form = FormEntry(request.POST or None)
+    form['date'].initial = datetime.now()
     if form.is_valid():
         form = form.formatted()
         # If the vesture already exists in the table clothes.
@@ -72,8 +73,9 @@ def add_product(request):
 
         messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
-        return render(request, 'stock/add_product.html', {'form': FormEntry(), 'page_title': 'Adicionar produto'})
-    return render(request, 'stock/add_product.html', {'form': form, 'page_title': 'Adicionar produto'})
+        return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()}), 'page_title': 'Adicionar produto'})
+    else:
+        return render(request, 'stock/add_product.html', {'form': form, 'page_title': 'Adicionar produto'})
 
 
 def add_existing_product(request, pk):
@@ -126,7 +128,7 @@ def add_existing_product(request, pk):
 
             messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
-            return render(request, 'stock/add_product.html', {'form': FormEntry()})
+            return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()})})
     return render(request, 'Stock/add_product.html', {
         'form': form,
         'page_title': 'Adicionar produto'
