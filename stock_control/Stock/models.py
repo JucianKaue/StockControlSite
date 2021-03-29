@@ -25,7 +25,7 @@ class Clothes(models.Model):
 class Entry(models.Model):
     clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, null=True, related_name='entry')
     amount = models.IntegerField(null=False)
-    date = models.DateTimeField(default=timezone.now, null=False)
+    date = models.DateTimeField(null=False)
 
     def __str__(self):
         return f'{self.clothes} --> Q:{self.amount} | D:{self.date}'
@@ -33,4 +33,10 @@ class Entry(models.Model):
 
 class Inventory(models.Model):
     clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, related_name='inventory')
-    amount = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField(null=False)
+
+
+class Sales(models.Model):
+    clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, related_name="sales")
+    amount = models.PositiveIntegerField(null=False)
+    date = models.DateTimeField(null=False)
