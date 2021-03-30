@@ -2,7 +2,6 @@ from django.urls import path
 from .views import *
 
 
-
 urlpatterns = [
     path('add_product/', add_product, name='add_product'),
     path('add_existing_product/<pk>', add_existing_product, name='add_existing_product'),
@@ -12,8 +11,7 @@ urlpatterns = [
 
     path('table_inventory/', table_inventory, name='table_inventory'),
     path('table_entry/', table_entry, name='table_entry'),
-
-    #path('delete_product_inventory/<pk>', delete_product_entry, name='delete_product_inventory'),
+    path('table_sales/', table_sales, name='table_sales')
 
 
 

@@ -1,0 +1,56 @@
+{% extends 'Stock/layout.html' %}
+
+{% block title %}
+Tabela de Vendas
+{% endblock %}
+
+{% block content %}
+<h1> ESTOQUE </h1>
+<form method="get">
+    <div class="input-group">
+        <input type="text" class="form-control" name="search" placeholder="Buscar Produto">
+        <select name="category" class="custom-select">
+            <option>CÓDIGO</option>
+            <option>TAMANHO</option>
+            <option>DESCRIÇÃO</option>
+            <option>MARCA</option>
+            <option>PREÇO</option>
+            <option>QUANTIDADE</option>
+        </select>
+        <span class="input-group-btn">
+            <button class="btn btn-default" type="submit">Pesquisar</button>
+        </span>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>CÓDIGO</th>
+            <th>TAMANHO</th>
+            <th>DESCRIÇÃO</th>
+            <th>MARCA</th>
+            <th>PREÇO</th>
+            <th>QUANTIDADE</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.clothes.code }}</td>
+                <td>{{ product.clothes.size }}</td>
+                <td>{{ product.clothes.description }}</td>
+                <td>{{ product.clothes.brand }}</td>
+                <td>{{ product.clothes.sell_price }}</td>
+                <td>{{ product.amount }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'add_product' %}">
+    <button class="btn btn-primary">
+        Cadastrar produto
+    </button>
+</a>
+
+{% endblock %}

@@ -332,4 +332,5 @@ def table_entry(request):
     })
 
 
-
+def table_sales(request):
+    pass
