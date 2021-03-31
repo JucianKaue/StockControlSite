@@ -33,6 +33,48 @@ class FormEntry(forms.Form):
                 'date': self.cleaned_data['date']}
 
 
+class FormSell(forms.Form):
+    clothes = forms.ModelChoiceField(Inventory.objects.filter(amount__gt=0))
+
+
+def SEARCH(query, category, products_db, brand_db, search_db):
+    if query:
+        if category == 'CÓDIGO':
+            products = []
+            for clothes in products_db.objects.filter(code__icontains=query):
+                for product in search_db.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'TAMANHO':
+            products = []
+            for clothes in products_db.objects.filter(size=query):
+                for product in search_db.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'DESCRIÇÃO':
+            products = []
+            for clothes in products_db.objects.filter(description__icontains=query):
+                for product in search_db.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'MARCA':
+            products = []
+            for brand in brand_db.objects.filter(name__icontains=query):
+                for clothes in products_db.objects.filter(brand=brand):
+                    for product in search_db.objects.filter(clothes=clothes):
+                        products.append(product)
+        elif category == 'PREÇO':
+            products = []
+            for clothes in products_db.objects.filter(sell_price=query):
+                for product in search_db.objects.filter(clothes=clothes):
+                    products.append(product)
+        elif category == 'QUANTIDADE':
+            products = search_db.objects.filter(amount=query)
+        else:
+            products = []
+    else:
+        products = search_db.objects.all()
+
+    return products
+
+
 def add_product(request):
     form = FormEntry(request.POST or None)
     form['date'].initial = datetime.now()
@@ -248,39 +290,11 @@ def table_inventory(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
 
-    if query:
-        if category == 'CÓDIGO':
-            products = []
-            for clothes in Clothes.objects.filter(code=query):
-                for product in Inventory.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'TAMANHO':
-            products = []
-            for clothes in Clothes.objects.filter(size=query):
-                for product in Inventory.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'DESCRIÇÃO':
-            products = []
-            for clothes in Clothes.objects.filter(description__icontains=query):
-                for product in Inventory.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'MARCA':
-            products = []
-            for brand in Brand.objects.filter(name__icontains=query):
-                for clothes in Clothes.objects.filter(brand=brand):
-                    for product in Inventory.objects.filter(clothes=clothes):
-                        products.append(product)
-        elif category == 'PREÇO':
-            products = []
-            for clothes in Clothes.objects.filter(sell_price=query):
-                for product in Inventory.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'QUANTIDADE':
-            products = Inventory.objects.filter(amount=query)
-        else:
-            products = []
-    else:
-        products = Inventory.objects.all()
+    products = SEARCH(query=query,
+                      category=category,
+                      products_db=Clothes,
+                      brand_db=Brand,
+                      search_db=Inventory)
 
     return render(request, 'stock/table_inventory.html', {
         'products': products
@@ -291,41 +305,11 @@ def table_entry(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
 
-    if query:
-        if category == 'CÓDIGO':
-            products = []
-            for clothes in Clothes.objects.filter(code=query):
-                for product in Entry.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'TAMANHO':
-            products = []
-            for clothes in Clothes.objects.filter(size=query):
-                for product in Entry.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'DESCRIÇÃO':
-            products = []
-            for clothes in Clothes.objects.filter(description__icontains=query):
-                for product in Entry.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'MARCA':
-            products = []
-            for brand in Brand.objects.filter(name__icontains=query):
-                for clothes in Clothes.objects.filter(brand=brand):
-                    for product in Entry.objects.filter(clothes=clothes):
-                        products.append(product)
-        elif category == 'PREÇO':
-            products = []
-            for clothes in Clothes.objects.filter(sell_price=query):
-                for product in Entry.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'QUANTIDADE':
-            products = Entry.objects.filter(amount=query)
-        elif category == 'DATA':
-            products = Entry.objects.filter(date__icontains=query)
-        else:
-            products = []
-    else:
-        products = Entry.objects.all()
+    products = SEARCH(query=query,
+                      category=category,
+                      products_db=Clothes,
+                      brand_db=Brand,
+                      search_db=Entry)
 
     return render(request, 'stock/table_entry.html', {
         'products': products
@@ -333,4 +317,21 @@ def table_entry(request):
 
 
 def table_sales(request):
-    pass
+    query = request.GET.get("search")
+    category = request.GET.get("category")
+
+    products = SEARCH(query=query,
+                      category=category,
+                      products_db=Clothes,
+                      brand_db=Brand,
+                      search_db=Sales)
+
+    return render(request, 'Stock/table_sales.html', {
+        'products': products
+    })
+
+
+def sell_product(request):
+    form = FormSell
+
+    return render(request, 'stock/add_product.html', {'form': form})

@@ -35,6 +35,9 @@ class Inventory(models.Model):
     clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, related_name='inventory')
     amount = models.PositiveIntegerField(null=False)
 
+    def __str__(self):
+        return f'{self.clothes} --> {self.amount}'
+
 
 class Sales(models.Model):
     clothes = models.ForeignKey(Clothes, on_delete=models.CASCADE, related_name="sales")

@@ -5,7 +5,7 @@ Tabela de Vendas
 {% endblock %}
 
 {% block content %}
-<h1> ESTOQUE </h1>
+<h1> TABELA DE SAÍDA </h1>
 <form method="get">
     <div class="input-group">
         <input type="text" class="form-control" name="search" placeholder="Buscar Produto">
@@ -30,7 +30,7 @@ Tabela de Vendas
             <th>TAMANHO</th>
             <th>DESCRIÇÃO</th>
             <th>MARCA</th>
-            <th>PREÇO</th>
+            <th>PREÇO DE VENDA</th>
             <th>QUANTIDADE</th>
         </tr>
     </thead>
@@ -47,9 +47,9 @@ Tabela de Vendas
         {% endfor %}
     </tbody>
 </table>
-<a href="{% url 'add_product' %}">
+<a href="{% url 'sell_product' %}">
     <button class="btn btn-primary">
-        Cadastrar produto
+        Vender
     </button>
 </a>
 

@@ -11,7 +11,9 @@ urlpatterns = [
 
     path('table_inventory/', table_inventory, name='table_inventory'),
     path('table_entry/', table_entry, name='table_entry'),
-    path('table_sales/', table_sales, name='table_sales')
+    path('table_sales/', table_sales, name='table_sales'),
+
+    path('sell_product/', sell_product, name='sell_product')
 
 
 
