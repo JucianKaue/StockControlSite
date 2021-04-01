@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'Stock_Control.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dalica_store',
+        'NAME': 'test',
         'USER': 'root',
         'HOST': 'localhost',
         'PORT': '3306',
