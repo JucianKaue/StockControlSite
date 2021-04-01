@@ -32,6 +32,7 @@ Tabela de Estoque
             <th>MARCA</th>
             <th>PREÇO</th>
             <th>QUANTIDADE</th>
+            <th>VENDER</th>
         </tr>
     </thead>
     <tbody>
@@ -43,6 +44,11 @@ Tabela de Estoque
                 <td>{{ product.clothes.brand }}</td>
                 <td>{{ product.clothes.sell_price }}</td>
                 <td>{{ product.amount }}</td>
+                <td>
+                    <a href="{% url 'sell_product' pk=product.pk %}">
+                        <span class="glyphicon glyphicon-usd"></span>
+                    </a>
+                </td>
             </tr>
         {% endfor %}
     </tbody>

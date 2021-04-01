@@ -35,6 +35,8 @@ class FormEntry(forms.Form):
 
 class FormSell(forms.Form):
     clothes = forms.ModelChoiceField(Inventory.objects.filter(amount__gt=0))
+    amount = forms.IntegerField(min_value=1, initial=1, required=True)
+    date = forms.DateTimeField(required=True)
 
 
 def SEARCH(query, category, products_db, brand_db, search_db):
@@ -115,9 +117,13 @@ def add_product(request):
 
         messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
-        return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()}), 'page_title': 'Adicionar produto'})
+        return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()}),
+                                                          'page_title': 'Adicionar produto',
+                                                          'title': 'Adiconar produto'})
     else:
-        return render(request, 'stock/add_product.html', {'form': form, 'page_title': 'Adicionar produto'})
+        return render(request, 'stock/add_product.html', {'form': form,
+                                                          'page_title': 'Adicionar produto',
+                                                          'title': 'Adiconar produto'})
 
 
 def add_existing_product(request, pk):
@@ -170,10 +176,14 @@ def add_existing_product(request, pk):
 
             messages.success(request, f'Produto "{product}" adicionado com sucesso')
 
-            return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()})})
+            return render(request, 'stock/add_product.html', {'form': FormEntry(initial={'date': datetime.now()}),
+                                                              'page_title': 'Adicionar produto',
+                                                              'title': 'Adiconar produto'
+                                                              })
     return render(request, 'Stock/add_product.html', {
         'form': form,
-        'page_title': 'Adicionar produto'
+        'page_title': 'Adicionar produto',
+        'title': 'Adiconar produto'
     })
 
 
@@ -331,7 +341,13 @@ def table_sales(request):
     })
 
 
-def sell_product(request):
-    form = FormSell
+def sell_product(request, pk):
+    form = FormSell(initial={
+        'clothes': Clothes.objects.get(pk=pk),
+        'amount': 1,
+        'date': datetime.now()
+    })
 
-    return render(request, 'stock/add_product.html', {'form': form})
+    return render(request, 'stock/add_product.html', {
+        'title': 'VENDER PRODUTO',
+        'form': form})
