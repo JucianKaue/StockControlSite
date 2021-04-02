@@ -295,7 +295,7 @@ def delete_product_entry(request, pk):
             'product': product
         })
 
-
+#==========================================================
 def table_inventory(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
@@ -340,7 +340,7 @@ def table_sales(request):
         'products': products
     })
 
-
+#==========================================================
 def sell_product(request, pk):
     form = FormSell(initial={
         'clothes': Clothes.objects.get(pk=pk),
@@ -370,3 +370,11 @@ def sell_product(request, pk):
     return render(request, 'stock/add_product.html', {
         'title': 'VENDER PRODUTO',
         'form': form})
+
+
+def edit_product_sell(request, pk):
+    return HttpResponse('EDITAR PRODUTO DE VENDAS')
+
+
+def delete_product_sell(request, pk):
+    return HttpResponse('DELETAR PRODUTO VENDAS')

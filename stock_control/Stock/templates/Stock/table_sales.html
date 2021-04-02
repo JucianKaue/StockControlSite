@@ -32,6 +32,7 @@ Tabela de Vendas
             <th>MARCA</th>
             <th>PREÇO DE VENDA</th>
             <th>QUANTIDADE</th>
+            <th>AÇÃO</th>
         </tr>
     </thead>
     <tbody>
@@ -43,6 +44,14 @@ Tabela de Vendas
                 <td>{{ product.clothes.brand }}</td>
                 <td>{{ product.clothes.sell_price }}</td>
                 <td>{{ product.amount }}</td>
+                <td>
+                    <a href="{% url 'edit_product_sell' pk=product.pk %}">
+                        <i class="glyphicon glyphicon-pencil"></i>
+                    </a>
+                    <a href="{% url 'delete_product_sell' pk=product.pk %}">
+                        <i class="glyphicon glyphicon-trash"></i>
+                    </a>
+                </td>
             </tr>
         {% endfor %}
     </tbody>
