@@ -347,6 +347,25 @@ def sell_product(request, pk):
         'amount': 1,
         'date': datetime.now()
     })
+    if request.method == 'POST':
+        form = FormSell(request.POST or None)
+        if form.is_valid():
+            form = form.cleaned_data
+            vesture = Clothes.objects.get(pk=pk)
+
+            # Add to sales table
+            Sales(clothes=vesture,
+                  amount=form['amount'],
+                  date=form['date']).save()
+
+            # Actualize the stock amount value
+            product_inventory = Inventory.objects.get(clothes=vesture)
+            product_inventory.amount -= form['amount']
+            product_inventory.save()
+
+            messages.success(request, f'"{vesture}" vendida com sucesso. ')
+
+            return redirect('table_sales')
 
     return render(request, 'stock/add_product.html', {
         'title': 'VENDER PRODUTO',
