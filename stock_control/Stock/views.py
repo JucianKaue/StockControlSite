@@ -375,7 +375,44 @@ def sell_product(request, pk):
 
 
 def edit_product_sell(request, pk):
-    return HttpResponse('TERMINA ESSA PORRA AQUI IRMÃO')
+    product_sales = Sales.objects.get(pk=pk)
+    form = FormSell(initial={
+        'clothes': product_sales.clothes,
+        'amount': product_sales.amount,
+        'date': product_sales.date
+    })
+    form.fields['clothes'].widget = forms.HiddenInput()
+
+    if request.method == 'POST':
+        form = FormSell(request.POST or None)
+        if form.is_valid():
+            form = form.cleaned_data
+
+            # If the new amount is different
+            if product_sales.amount != form['amount']:
+                # Reset the amount to the stock table
+                product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
+                product_inventory.amount += product_sales.amount
+
+                # Actualize the amount at sales tables
+                product_sales.amount = form['amount']
+                product_sales.save()
+
+                # Actualize the value on the inventory table
+                product_inventory.amount -= product_sales.amount
+                product_inventory.save()
+
+            product_sales.date = form['date']
+            product_sales.save()
+
+        return redirect('table_sales')
+
+    else:
+        return render(request, 'stock/add_product.html', {
+            'is_edit_product_sell': True,
+            'vesture': f'{product_sales.clothes}',
+            'title': 'VENDER PRODUTO',
+            'form': form})
 
 
 def delete_product_sell(request, pk):

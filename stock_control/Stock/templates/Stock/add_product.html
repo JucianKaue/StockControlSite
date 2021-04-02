@@ -9,6 +9,11 @@
 <h1> {{page_title}} </h1>
 <form method="post">
     {% csrf_token %}
+
+    {% if is_edit_product_sell %}
+        <p style="font-size: 20px;">Roupa: {{ vesture }}<p>
+    {% endif %}
+
     {{ form | bootstrap }}
     <button type="submit" class="btn btn-primary">
     Salvar
