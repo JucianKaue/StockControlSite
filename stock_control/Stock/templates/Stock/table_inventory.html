@@ -45,9 +45,11 @@ Tabela de Estoque
                 <td>{{ product.clothes.sell_price }}</td>
                 <td>{{ product.amount }}</td>
                 <td>
+                    {% if product.amount > 0 %}
                     <a href="{% url 'sell_product' pk=product.pk %}">
                         <span class="glyphicon glyphicon-usd"></span>
                     </a>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}
