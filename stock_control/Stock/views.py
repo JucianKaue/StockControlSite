@@ -344,26 +344,34 @@ def table_sales(request):
 
 # ==========================================================
 def sell_product(request, pk):
-    form = FormSell(initial={
-        'clothes': Clothes.objects.get(pk=pk),
-        'amount': 1,
-        'date': datetime.now()
-    })
+    if Inventory.objects.get(pk=pk).amount > 0:
+        form = FormSell(initial={
+            'clothes': Inventory.objects.get(pk=pk),
+            'amount': 1,
+            'date': datetime.now()
+        })
+    else:
+        return HttpResponse('O PRODUTO ESTÁ ZERADO')
+    
     if request.method == 'POST':
         form = FormSell(request.POST or None)
         if form.is_valid():
             form = form.cleaned_data
-            vesture = Clothes.objects.get(pk=pk)
+
+            product_inventory = Inventory.objects.get(pk=pk)
+            vesture = product_inventory.clothes
+
+            if form['amount'] > product_inventory.amount:
+                return HttpResponse('A QUANTIDADE VENDIDA É MAIOR DO QUE A DISPONÍVEL NO ESTOQUE')
+
+            # Actualize the stock amount value
+            product_inventory.amount -= form['amount']
+            product_inventory.save()
 
             # Add to sales table
             Sales(clothes=vesture,
                   amount=form['amount'],
                   date=form['date']).save()
-
-            # Actualize the stock amount value
-            product_inventory = Inventory.objects.get(clothes=vesture)
-            product_inventory.amount -= form['amount']
-            product_inventory.save()
 
             messages.success(request, f'"{vesture}" vendida com sucesso. ')
 
@@ -379,7 +387,7 @@ def edit_product_sell(request, pk):
     form = FormSell(initial={
         'clothes': product_sales.clothes,
         'amount': product_sales.amount,
-        'date': product_sales.date
+        'date': datetime.now()
     })
     form.fields['clothes'].widget = forms.HiddenInput()
 
@@ -390,8 +398,11 @@ def edit_product_sell(request, pk):
 
             # If the new amount is different
             if product_sales.amount != form['amount']:
-                # Reset the amount to the stock table
+
                 product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
+                if form['amount'] > product_inventory.amount:
+                    return HttpResponse('A QUANTIDADE VENDIDA É MAIOR DO QUE A DISPONÍVEL NO ESTOQUE')
+                # Reset the amount to the stock table
                 product_inventory.amount += product_sales.amount
 
                 # Actualize the amount at sales tables
