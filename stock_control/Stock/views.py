@@ -77,6 +77,25 @@ def SEARCH(query, category, products_db, brand_db, search_db):
     return products
 
 
+def CHECK_ENTRY_GREATER_SELL(db_entry, db_sell, product):
+    products_entry = db_entry.objects.filter(clothes=product)
+    products_sell = db_sell.objects.filter(clothes=product)
+
+    products_entry_amount = 0
+    for product_entry in products_entry:
+        products_entry_amount += product_entry.amount
+
+    products_sell_amount = 0
+    for product_sell in products_sell:
+        products_sell_amount += product_sell.amount
+
+    if products_entry_amount >= products_sell_amount:
+        return True
+    else:
+        return False
+
+
+# ==========================================================
 def add_product(request):
     form = FormEntry(request.POST or None)
     form['date'].initial = datetime.now()
@@ -126,6 +145,7 @@ def add_product(request):
                                                           'title': 'Adiconar produto'})
 
 
+# ENTRY TABLE FUNCTIONS ==========================================================
 def add_existing_product(request, pk):
     product = Entry.objects.get(pk=pk)
     form = FormEntry(initial={
@@ -188,19 +208,28 @@ def add_existing_product(request, pk):
 
 
 def edit_product_entry(request, pk):
+
     product_entry = Entry.objects.get(pk=pk)
     if request.method == 'POST':
         form = FormEntry(request.POST or None)
         if form.is_valid():
             form = form.formatted()
 
-            product = Clothes.objects.get(code=product_entry.clothes.code, size=product_entry.clothes.size)
-            product_inventory = Inventory.objects.get(clothes=product)
+            product = product_entry.clothes # Clothes.objects.get(code=product_entry.clothes.code, size=product_entry.clothes.size)
+
             # Diminui a quantidade no estoque
+            product_inventory = Inventory.objects.get(clothes=product)
             product_inventory.amount -= product_entry.amount   # Reset the product amount
             product_inventory.save()
-            product_inventory = Inventory.objects.get(clothes=product)
 
+            if CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product):
+                product_inventory.amount += product_inventory.amount
+                product_inventory.save()
+                return HttpResponse('<h1 style="text-align: center">'
+                                    'Quantidade a ser excluída é maior que a quantidade vendida'
+                                    '</h1>')
+
+            # Create a new row if there is change in the code or size
             if product_entry.clothes.code != form['code'] or product_entry.clothes.size != form['size']:
                 product_entry.delete()
                 if product_inventory.amount == 0:
@@ -235,7 +264,7 @@ def edit_product_entry(request, pk):
             # Add to inventory
             Inventory(
                 clothes=vesture,
-                amount=form['amount'],
+                amount=product_inventory.amount + form['amount'],
             ).save()
 
             # Delete de duplicated products
@@ -250,7 +279,7 @@ def edit_product_entry(request, pk):
                     else:
                         query_inventory[i].delete()
 
-            # uptade the data to all of the products with this product code
+            # update the data to all of the products with this product code
             query_clothes = Clothes.objects.filter(code=form['code'])
             for clothes in query_clothes:
                 clothes.description = form['description']
@@ -284,6 +313,13 @@ def delete_product_entry(request, pk):
         product_inventory.amount -= product.amount
         product_inventory.save()
 
+        if not CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product.clothes):
+            product_inventory.amount += product.amount
+            product_inventory.save()
+            return HttpResponse('<h1 style="text-align: center">'
+                                'Quantidade a ser excluída é maior que a quantidade vendida'
+                                '</h1>')
+
         if product_inventory.amount == 0:
             product_inventory.delete()
             Clothes.objects.get(code=product.clothes.code, size=product.clothes.size).delete()
@@ -296,7 +332,7 @@ def delete_product_entry(request, pk):
         })
 
 
-# ==========================================================
+# TABLES ==========================================================
 def table_inventory(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
@@ -342,7 +378,7 @@ def table_sales(request):
     })
 
 
-# ==========================================================
+# SELL TABLE FUNCTIONS ==========================================================
 def sell_product(request, pk):
     if Inventory.objects.get(pk=pk).amount > 0:
         form = FormSell(initial={
