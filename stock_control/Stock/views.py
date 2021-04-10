@@ -165,7 +165,7 @@ def add_existing_product(request, pk):
             form = form.formatted()
             # If the vesture already exists in the table clothes.
             if len(Clothes.objects.filter(code=form['code'], size=form['size'])) == 1:
-                product = Clothes.objects.get(code=form['code'])
+                product = Clothes.objects.get(code=form['code'], size=form['size'])
             else:
                 product = Clothes(
                     code=form['code'],
@@ -387,7 +387,7 @@ def sell_product(request, pk):
             'date': datetime.now()
         })
     else:
-        return HttpResponse('O PRODUTO ESTÁ ZERADO')
+        return HttpResponse('O PRODUTO NÃO EXISTE')
     
     if request.method == 'POST':
         form = FormSell(request.POST or None)
@@ -419,6 +419,7 @@ def sell_product(request, pk):
 
 
 def edit_product_sell(request, pk):
+    """
     product_sales = Sales.objects.get(pk=pk)
     form = FormSell(initial={
         'clothes': product_sales.clothes,
@@ -428,6 +429,7 @@ def edit_product_sell(request, pk):
     form.fields['clothes'].widget = forms.HiddenInput()
 
     if request.method == 'POST':
+        pass
         form = FormSell(request.POST or None)
         if form.is_valid():
             form = form.cleaned_data
@@ -459,11 +461,12 @@ def edit_product_sell(request, pk):
             'is_edit_product_sell': True,
             'vesture': f'{product_sales.clothes}',
             'title': 'VENDER PRODUTO',
-            'form': form})
+            'form': form})"""
 
 
 def delete_product_sell(request, pk):
-    if request.method == 'POST':
+    pass
+    """if request.method == 'POST':
         product_sales = Sales.objects.get(pk=pk)
         product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
 
@@ -478,4 +481,4 @@ def delete_product_sell(request, pk):
     else:
         return render(request, 'stock/delete_product.html', {
             'product': Sales.objects.get(pk=pk).clothes
-        })
+        })"""
