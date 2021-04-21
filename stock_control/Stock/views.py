@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django import forms
 from django.utils.safestring import mark_safe
 
+from .utils import *
 from .models import *
 from datetime import datetime
 
@@ -34,65 +35,9 @@ class FormEntry(forms.Form):
 
 
 class FormSell(forms.Form):
-    clothes = forms.ModelChoiceField(Inventory.objects.filter(amount__gt=0))
+    clothes = forms.ModelChoiceField(Inventory.objects.filter(amount__gt=-1))
     amount = forms.IntegerField(min_value=1, initial=1, required=True)
     date = forms.DateTimeField(required=True)
-
-
-def SEARCH(query, category, products_db, brand_db, search_db):
-    if query:
-        if category == 'CÓDIGO':
-            products = []
-            for clothes in products_db.objects.filter(code__icontains=query):
-                for product in search_db.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'TAMANHO':
-            products = []
-            for clothes in products_db.objects.filter(size=query):
-                for product in search_db.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'DESCRIÇÃO':
-            products = []
-            for clothes in products_db.objects.filter(description__icontains=query):
-                for product in search_db.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'MARCA':
-            products = []
-            for brand in brand_db.objects.filter(name__icontains=query):
-                for clothes in products_db.objects.filter(brand=brand):
-                    for product in search_db.objects.filter(clothes=clothes):
-                        products.append(product)
-        elif category == 'PREÇO':
-            products = []
-            for clothes in products_db.objects.filter(sell_price=query):
-                for product in search_db.objects.filter(clothes=clothes):
-                    products.append(product)
-        elif category == 'QUANTIDADE':
-            products = search_db.objects.filter(amount=query)
-        else:
-            products = []
-    else:
-        products = search_db.objects.all()
-
-    return products
-
-
-def CHECK_ENTRY_GREATER_SELL(db_entry, db_sell, product):
-    products_entry = db_entry.objects.filter(clothes=product)
-    products_sell = db_sell.objects.filter(clothes=product)
-
-    products_entry_amount = 0
-    for product_entry in products_entry:
-        products_entry_amount += product_entry.amount
-
-    products_sell_amount = 0
-    for product_sell in products_sell:
-        products_sell_amount += product_sell.amount
-
-    if products_entry_amount >= products_sell_amount:
-        return True
-    else:
-        return False
 
 
 # ==========================================================
@@ -222,12 +167,12 @@ def edit_product_entry(request, pk):
             product_inventory.amount -= product_entry.amount   # Reset the product amount
             product_inventory.save()
 
-            if CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product):
+            """ if CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product):
                 product_inventory.amount += product_inventory.amount
                 product_inventory.save()
                 return HttpResponse('<h1 style="text-align: center">'
                                     'Quantidade a ser excluída é maior que a quantidade vendida'
-                                    '</h1>')
+            '</h1>')"""
 
             # Create a new row if there is change in the code or size
             if product_entry.clothes.code != form['code'] or product_entry.clothes.size != form['size']:
@@ -313,12 +258,12 @@ def delete_product_entry(request, pk):
         product_inventory.amount -= product.amount
         product_inventory.save()
 
-        if not CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product.clothes):
+        """if not CHECK_ENTRY_GREATER_SELL(db_entry=Entry, db_sell=Sales, product=product.clothes):
             product_inventory.amount += product.amount
             product_inventory.save()
             return HttpResponse('<h1 style="text-align: center">'
                                 'Quantidade a ser excluída é maior que a quantidade vendida'
-                                '</h1>')
+                                '</h1>')"""
 
         if product_inventory.amount == 0:
             product_inventory.delete()
@@ -337,11 +282,7 @@ def table_inventory(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
 
-    products = SEARCH(query=query,
-                      category=category,
-                      products_db=Clothes,
-                      brand_db=Brand,
-                      search_db=Inventory)
+    products = search(query=query, category=category, products_db=Clothes, brand_db=Brand, search_db=Inventory)
 
     return render(request, 'stock/table_inventory.html', {
         'products': products
@@ -352,11 +293,7 @@ def table_entry(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
 
-    products = SEARCH(query=query,
-                      category=category,
-                      products_db=Clothes,
-                      brand_db=Brand,
-                      search_db=Entry)
+    products = search(query=query, category=category, products_db=Clothes, brand_db=Brand, search_db=Entry)
 
     return render(request, 'stock/table_entry.html', {
         'products': products
@@ -367,11 +304,7 @@ def table_sales(request):
     query = request.GET.get("search")
     category = request.GET.get("category")
 
-    products = SEARCH(query=query,
-                      category=category,
-                      products_db=Clothes,
-                      brand_db=Brand,
-                      search_db=Sales)
+    products = search(query=query, category=category, products_db=Clothes, brand_db=Brand, search_db=Sales)
 
     return render(request, 'Stock/table_sales.html', {
         'products': products
@@ -388,7 +321,7 @@ def sell_product(request, pk):
         })
     else:
         return HttpResponse('O PRODUTO NÃO EXISTE')
-    
+
     if request.method == 'POST':
         form = FormSell(request.POST or None)
         if form.is_valid():
@@ -419,40 +352,38 @@ def sell_product(request, pk):
 
 
 def edit_product_sell(request, pk):
-    """
     product_sales = Sales.objects.get(pk=pk)
     form = FormSell(initial={
-        'clothes': product_sales.clothes,
+        'clothes': Inventory.objects.get(clothes=product_sales.clothes),
         'amount': product_sales.amount,
         'date': datetime.now()
     })
     form.fields['clothes'].widget = forms.HiddenInput()
 
     if request.method == 'POST':
-        pass
         form = FormSell(request.POST or None)
         if form.is_valid():
             form = form.cleaned_data
 
-            # If the new amount is different
-            if product_sales.amount != form['amount']:
+            product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
 
-                product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
-                if form['amount'] > product_inventory.amount:
-                    return HttpResponse('A QUANTIDADE VENDIDA É MAIOR DO QUE A DISPONÍVEL NO ESTOQUE')
-                # Reset the amount to the stock table
-                product_inventory.amount += product_sales.amount
+            # Define the reset inventory amount
+            reset_inventory_amount = product_inventory.amount + product_sales.amount
+
+            if form['amount'] > reset_inventory_amount:
+                return HttpResponse('<h1 style="text-align: center; background-color: red;">A QUANTIDADE VENDIDA É MAIOR DO QUE A DISPONÍVEL NO ESTOQUE<h1>')
+            else:
 
                 # Actualize the amount at sales tables
                 product_sales.amount = form['amount']
                 product_sales.save()
 
                 # Actualize the value on the inventory table
-                product_inventory.amount -= product_sales.amount
+                product_inventory.amount = reset_inventory_amount - form['amount']
                 product_inventory.save()
 
-            product_sales.date = form['date']
-            product_sales.save()
+                product_sales.date = form['date']
+                product_sales.save()
 
         return redirect('table_sales')
 
@@ -461,12 +392,12 @@ def edit_product_sell(request, pk):
             'is_edit_product_sell': True,
             'vesture': f'{product_sales.clothes}',
             'title': 'VENDER PRODUTO',
-            'form': form})"""
+            'form': form})
 
 
 def delete_product_sell(request, pk):
-    pass
-    """if request.method == 'POST':
+
+    if request.method == 'POST':
         product_sales = Sales.objects.get(pk=pk)
         product_inventory = Inventory.objects.get(clothes=product_sales.clothes)
 
@@ -481,4 +412,4 @@ def delete_product_sell(request, pk):
     else:
         return render(request, 'stock/delete_product.html', {
             'product': Sales.objects.get(pk=pk).clothes
-        })"""
+        })
